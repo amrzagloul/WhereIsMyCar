@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="HomeView">
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.sensors.Geolocation;
+			
+			import mx.events.FlexEvent;
+			
+			import spark.events.DropDownEvent; 
+			private var geoLocation:Geolocation;
+			
+			
+			protected function application1_applicationCompleteHandler (event:FlexEvent):void {
+				status.visible=false;
+				image2.visible=false;
+				var file:File = File.applicationStorageDirectory.resolvePath("whereIsMyCar/location.txt");
+				var stream:FileStream = new FileStream()
+				stream.open(file, FileMode.READ);
+				var string:String = stream.readUTFBytes(stream.bytesAvailable); 
+				stream.close();
+				if (string.length > 0){
+					checkin.visible=false;
+					image1.source="carsCartoon2.jpeg";
+					image1.visible=true;
+					status.text="You have parked at: Somewhere";
+					status.visible=true;
+				}	
+			
+				
+			}
+			
+			private function handleLocationRequest(event:GeolocationEvent):void { 
+				status.visible=true;
+				image2.visible=true;
+				
+				var file:File = File.applicationStorageDirectory.resolvePath("whereIsMyCar/location.txt");
+				var stream:FileStream = new FileStream()
+				stream.open(file, FileMode.WRITE); 
+				stream.writeUTFBytes(event.latitude + ";" + event.longitude); 
+				stream.close();
+				status.text="Well done!!\n\n\n Now I'll remember where you've parked your car!";
+				status.text=status.text+"\n\n You are parked at ("+event.latitude + ";" + event.longitude+")";	
+				checkin.visible=false;
+				
+			}
+			
+			protected function checkin_clickHandler(event:MouseEvent):void
+			{
+				if(Geolocation.isSupported==true){
+					geoLocation = new Geolocation(); 
+					geoLocation.setRequestedUpdateInterval(5);
+					geoLocation.addEventListener(GeolocationEvent.UPDATE, handleLocationRequest);
+					
+				} else {
+					status.text = "Geolocation feature not supported";
+					status.visible=true;
+					image2.visible=true;
+					image2.source="carsCartoon.jpeg";
+					checkin.visible=false;
+				}
+				
+			}
+			
+			
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Button id="checkin" width="150" height="130" label="Estacione"
+			  click="checkin_clickHandler(event)" horizontalCenter="-27"
+			  icon="@Embed('103374821.jpg')" verticalCenter="-77"/>
+	<s:Image id="image1" horizontalCenter="" source="carsCartoon2.jpeg"
+			 verticalCenter="-10" visible="false"/>
+	<s:Image id="image2" visible="false" horizontalCenter="0" source="carsCartoon.jpeg"
+			 verticalCenter="-50"/>
+	<s:Label id="status" horizontalCenter="0" verticalCenter="0" />
+</s:View>
